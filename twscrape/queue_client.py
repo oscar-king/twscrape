@@ -1,7 +1,7 @@
 import json
 import os
 from typing import Any, Optional, Dict, Union
-
+import brotli
 import httpx
 
 from .accounts_pool import Account, AccountsPool
@@ -128,7 +128,14 @@ class QueueClient:
         try:
             res = rep.json()
         except json.JSONDecodeError:
-            res: Any = {"_raw": rep.text}
+            if rep.headers.get("content-encoding") == "br":
+                try:
+                    rep._text = brotli.decompress(rep.content)
+                    res = rep.json()
+                except brotli.Error as e:
+                    res: Any = {"_raw": rep.text}
+            else:
+                res: Any = {"_raw": rep.text}
 
         msg = "OK"
         if "errors" in res:
