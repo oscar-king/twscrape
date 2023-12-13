@@ -2,7 +2,7 @@ import base64
 import json
 from collections import defaultdict
 from datetime import datetime, timezone
-from typing import Any, AsyncGenerator, Callable, TypeVar
+from typing import Any, AsyncGenerator, Callable, TypeVar, List, Union, Optional
 
 from httpx import HTTPStatusError, Response
 
@@ -25,7 +25,7 @@ class utc:
         return int(utc.now().timestamp())
 
 
-async def gather(gen: AsyncGenerator[T, None]) -> list[T]:
+async def gather(gen: AsyncGenerator[T, None]) -> List[T]:
     items = []
     async for x in gen:
         items.append(x)
@@ -52,7 +52,7 @@ def encode_params(obj: dict):
     return res
 
 
-def get_or(obj: dict, key: str, default_value: T = None) -> Any | T:
+def get_or(obj: dict, key: str, default_value: T = None) -> Union[Any, T]:
     for part in key.split("."):
         if part not in obj:
             return default_value
@@ -60,7 +60,7 @@ def get_or(obj: dict, key: str, default_value: T = None) -> Any | T:
     return obj
 
 
-def int_or(obj: dict, key: str, default_value: int | None = None):
+def int_or(obj: dict, key: str, default_value: Optional[int] = None):
     try:
         val = get_or(obj, key)
         return int(val) if val is not None else default_value
@@ -86,21 +86,21 @@ def get_by_path(obj: dict, key: str, default=None):
     return default
 
 
-def find_item(lst: list[T], fn: Callable[[T], bool]) -> T | None:
+def find_item(lst: List[T], fn: Callable[[T], bool]) -> Optional[T]:
     for item in lst:
         if fn(item):
             return item
     return None
 
 
-def find_or_fail(lst: list[T], fn: Callable[[T], bool]) -> T:
+def find_or_fail(lst: List[T], fn: Callable[[T], bool]) -> T:
     item = find_item(lst, fn)
     if item is None:
         raise ValueError()
     return item
 
 
-def find_obj(obj: dict, fn: Callable[[dict], bool]) -> Any | None:
+def find_obj(obj: dict, fn: Callable[[dict], bool]) -> Optional[Any]:
     if not isinstance(obj, dict):
         return None
 
@@ -161,7 +161,7 @@ def to_old_rep(obj: dict) -> dict[str, dict]:
     return {"tweets": {**tw1, **tw2}, "users": users}
 
 
-def print_table(rows: list[dict], hr_after=False):
+def print_table(rows: List[dict], hr_after=False):
     if not rows:
         return
 

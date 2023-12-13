@@ -1,4 +1,6 @@
 # ruff: noqa: F405
+from typing import Optional, Union
+
 from httpx import Response
 
 from .accounts_pool import AccountsPool
@@ -18,7 +20,7 @@ SEARCH_FEATURES = {
 class API:
     pool: AccountsPool
 
-    def __init__(self, pool: AccountsPool | str | None = None, debug=False):
+    def __init__(self, pool: Optional[Union[AccountsPool, str]] = None, debug=False):
         if isinstance(pool, AccountsPool):
             self.pool = pool
         elif isinstance(pool, str):
@@ -32,7 +34,7 @@ class API:
 
     # general helpers
 
-    def _is_end(self, rep: Response, q: str, res: list, cur: str | None, cnt: int, lim: int):
+    def _is_end(self, rep: Response, q: str, res: list, cur: Optional[str], cnt: int, lim: int):
         new_count = len(res)
         new_total = cnt + new_count
 
@@ -49,7 +51,7 @@ class API:
 
     # gql helpers
 
-    async def _gql_items(self, op: str, kv: dict, ft: dict | None = None, limit=-1):
+    async def _gql_items(self, op: str, kv: dict, ft: Optional[dict] = None, limit=-1):
         queue, cursor, count, active = op.split("/")[-1], None, 0, True
         kv, ft = {**kv}, {**GQL_FEATURES, **(ft or {})}
 
@@ -74,7 +76,7 @@ class API:
 
                 yield rep
 
-    async def _gql_item(self, op: str, kv: dict, ft: dict | None = None):
+    async def _gql_item(self, op: str, kv: dict, ft: Optional[dict] = None):
         ft = ft or {}
         queue = op.split("/")[-1]
         async with QueueClient(self.pool, queue, self.debug) as client:

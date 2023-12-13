@@ -1,5 +1,6 @@
 import json
 import os
+from typing import Optional
 
 from twscrape import API, gather
 from twscrape.logger import set_log_level
@@ -34,7 +35,7 @@ def fake_rep(fn: str, filename: str):
     return rep
 
 
-def mock_rep(obj, fn: str, filename: str | None = None):
+def mock_rep(obj, fn: str, filename: Optional[str] = None):
     async def cb_rep(*args, **kwargs):
         return fake_rep(fn, filename or fn)
 
@@ -48,7 +49,7 @@ def mock_gen(obj, fn: str):
     setattr(obj, fn, cb_gen)
 
 
-def check_tweet(doc: Tweet | None):
+def check_tweet(doc: Optional[Tweet]):
     assert doc is not None
     assert doc.id is not None
     assert doc.id_str is not None

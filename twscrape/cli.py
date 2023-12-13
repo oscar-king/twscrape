@@ -6,6 +6,7 @@ import io
 import json
 import sqlite3
 from importlib.metadata import version
+from typing import Union, Optional
 
 import httpx
 
@@ -31,7 +32,7 @@ def get_fn_arg(args):
     exit(1)
 
 
-def to_str(doc: httpx.Response | Tweet | User | None) -> str:
+def to_str(doc: Optional[Union[httpx.Response, Tweet, User]]) -> str:
     if doc is None:
         return "Not Found. See --raw for more details."
 

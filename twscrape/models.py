@@ -7,7 +7,7 @@ import string
 import traceback
 from dataclasses import asdict, dataclass, field
 from datetime import datetime
-from typing import Generator, Optional
+from typing import Generator, Optional, List
 
 import httpx
 
@@ -64,8 +64,8 @@ class Place(JSONTrait):
 @dataclass
 class TextLink(JSONTrait):
     url: str
-    text: str | None
-    tcourl: str | None
+    text: Optional[str]
+    tcourl: Optional[str]
 
     @staticmethod
     def parse(obj: dict):
@@ -110,12 +110,12 @@ class User(JSONTrait):
     mediaCount: int
     location: str
     profileImageUrl: str
-    profileBannerUrl: str | None = None
-    protected: bool | None = None
-    verified: bool | None = None
-    blue: bool | None = None
-    blueType: str | None = None
-    descriptionLinks: list[TextLink] = field(default_factory=list)
+    profileBannerUrl: Optional[str] = None
+    protected: Optional[bool] = None
+    verified: Optional[bool] = None
+    blue: Optional[bool] = None
+    blueType: Optional[str] = None
+    descriptionLinks: List[TextLink] = field(default_factory=list)
     _type: str = "snscrape.modules.twitter.User"
 
     # todo:
@@ -163,20 +163,20 @@ class Tweet(JSONTrait):
     likeCount: int
     quoteCount: int
     conversationId: int
-    hashtags: list[str]
-    cashtags: list[str]
-    mentionedUsers: list[UserRef]
-    links: list[TextLink]
-    viewCount: int | None = None
+    hashtags: List[str]
+    cashtags: List[str]
+    mentionedUsers: List[UserRef]
+    links: List[TextLink]
+    viewCount: Optional[int] = None
     retweetedTweet: Optional["Tweet"] = None
     quotedTweet: Optional["Tweet"] = None
     place: Optional[Place] = None
     coordinates: Optional[Coordinates] = None
-    inReplyToTweetId: int | None = None
-    inReplyToUser: UserRef | None = None
-    source: str | None = None
-    sourceUrl: str | None = None
-    sourceLabel: str | None = None
+    inReplyToTweetId: Optional[int] = None
+    inReplyToUser: Optional[UserRef] = None
+    source: Optional[str] = None
+    sourceUrl: Optional[str] = None
+    sourceLabel: Optional[str] = None
     media: Optional["Media"] = None
     _type: str = "snscrape.modules.twitter.Tweet"
 
@@ -258,9 +258,9 @@ class MediaPhoto(JSONTrait):
 @dataclass
 class MediaVideo(JSONTrait):
     thumbnailUrl: str
-    variants: list["MediaVideoVariant"]
+    variants: List["MediaVideoVariant"]
     duration: int
-    views: int | None = None
+    views: Optional[int] = None
 
     @staticmethod
     def parse(obj: dict):
@@ -307,15 +307,15 @@ class MediaVideoVariant(JSONTrait):
 
 @dataclass
 class Media(JSONTrait):
-    photos: list[MediaPhoto] = field(default_factory=list)
-    videos: list[MediaVideo] = field(default_factory=list)
-    animated: list[MediaAnimated] = field(default_factory=list)
+    photos: List[MediaPhoto] = field(default_factory=list)
+    videos: List[MediaVideo] = field(default_factory=list)
+    animated: List[MediaAnimated] = field(default_factory=list)
 
     @staticmethod
     def parse(obj: dict):
-        photos: list[MediaPhoto] = []
-        videos: list[MediaVideo] = []
-        animated: list[MediaAnimated] = []
+        photos: List[MediaPhoto] = []
+        videos: List[MediaVideo] = []
+        animated: List[MediaAnimated] = []
 
         for x in get_or(obj, "extended_entities.media", []):
             if x["type"] == "video":
@@ -372,7 +372,7 @@ def _get_source_label(tw_obj: dict):
     return None
 
 
-def _parse_links(obj: dict, paths: list[str]):
+def _parse_links(obj: dict, paths: List[str]):
     links = []
     for x in paths:
         links.extend(get_or(obj, x, []))
@@ -383,7 +383,7 @@ def _parse_links(obj: dict, paths: list[str]):
     return links
 
 
-def _first(obj: dict, paths: list[str]):
+def _first(obj: dict, paths: List[str]):
     for x in paths:
         cid = get_or(obj, x, None)
         if cid is not None:
@@ -459,7 +459,7 @@ def parse_users(rep: httpx.Response, limit: int = -1) -> Generator[User, None, N
     return _parse_items(rep, "user", limit)  # type: ignore
 
 
-def parse_tweet(rep: httpx.Response, twid: int) -> Tweet | None:
+def parse_tweet(rep: httpx.Response, twid: int) -> Optional[Tweet]:
     try:
         docs = list(parse_tweets(rep))
         for x in docs:
@@ -471,7 +471,7 @@ def parse_tweet(rep: httpx.Response, twid: int) -> Tweet | None:
         return None
 
 
-def parse_user(rep: httpx.Response) -> User | None:
+def parse_user(rep: httpx.Response) -> Optional[User]:
     try:
         docs = list(parse_users(rep))
         if len(docs) == 1:

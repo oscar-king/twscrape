@@ -14,7 +14,7 @@ async def worker(queue: asyncio.Queue, api: twscrape.API):
         try:
             tweets = await twscrape.gather(api.search(query))
             print(f"{query} - {len(tweets)} - {int(time.time())}")
-            # do something with tweets here, eg same to file, etc
+            # do something with tweets here, e.g. same to file, etc
         except Exception as e:
             print(f"Error on {query} - {type(e)}")
         finally:

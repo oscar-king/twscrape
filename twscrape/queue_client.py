@@ -1,6 +1,6 @@
 import json
 import os
-from typing import Any
+from typing import Any, Optional, Dict, Union
 
 import httpx
 
@@ -8,7 +8,7 @@ from .accounts_pool import Account, AccountsPool
 from .logger import logger
 from .utils import utc
 
-ReqParams = dict[str, str | int] | None
+ReqParams = Optional[Dict[str, Union[str , int]]]
 TMP_TS = utc.now().isoformat().split(".")[0].replace("T", "_").replace(":", "-")[0:16]
 
 
@@ -85,7 +85,7 @@ class QueueClient:
         self.pool = pool
         self.queue = queue
         self.debug = debug
-        self.ctx: Ctx | None = None
+        self.ctx: Optional[Ctx] = None
 
     async def __aenter__(self):
         await self._get_ctx()

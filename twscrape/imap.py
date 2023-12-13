@@ -3,6 +3,7 @@ import email as emaillib
 import imaplib
 import time
 from datetime import datetime
+from typing import Dict, Optional
 
 from .logger import logger
 
@@ -21,7 +22,7 @@ class EmailCodeTimeoutError(Exception):
         super().__init__(self.message)
 
 
-IMAP_MAPPING: dict[str, str] = {
+IMAP_MAPPING: Dict[str, str] = {
     "yahoo.com": "imap.mail.yahoo.com",
     "icloud.com": "imap.mail.me.com",
     "outlook.com": "imap-mail.outlook.com",
@@ -40,7 +41,7 @@ def _get_imap_domain(email: str) -> str:
     return f"imap.{email_domain}"
 
 
-def _wait_email_code(imap: imaplib.IMAP4_SSL, count: int, min_t: datetime | None) -> str | None:
+def _wait_email_code(imap: imaplib.IMAP4_SSL, count: int, min_t: Optional[datetime]) -> Optional[str]:
     for i in range(count, 0, -1):
         _, rep = imap.fetch(str(i), "(RFC822)")
         for x in rep:
@@ -63,7 +64,7 @@ def _wait_email_code(imap: imaplib.IMAP4_SSL, count: int, min_t: datetime | None
 
 
 async def imap_get_email_code(
-    imap: imaplib.IMAP4_SSL, email: str, min_t: datetime | None = None
+    imap: imaplib.IMAP4_SSL, email: str, min_t: Optional[datetime] = None
 ) -> str:
     try:
         start_time, was_count = time.time(), 0

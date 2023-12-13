@@ -3,7 +3,7 @@ import asyncio
 import sqlite3
 import uuid
 from datetime import datetime, timezone
-from typing import TypedDict
+from typing import TypedDict, Optional, List, Union
 
 from fake_useragent import UserAgent
 
@@ -18,9 +18,9 @@ class AccountInfo(TypedDict):
     username: str
     logged_in: bool
     active: bool
-    last_used: datetime | None
+    last_used: Optional[datetime]
     total_req: int
-    error_msg: str | None
+    error_msg: Optional[str]
 
 
 def guess_delim(line: str):
@@ -66,9 +66,9 @@ class AccountsPool:
         password: str,
         email: str,
         email_password: str,
-        user_agent: str | None = None,
-        proxy: str | None = None,
-        cookies: str | None = None,
+        user_agent: Optional[str] = None,
+        proxy: Optional[str] = None,
+        cookies: Optional[str] = None,
     ):
         qs = "SELECT * FROM accounts WHERE username = :username"
         rs = await fetchone(self._db_file, qs, {"username": username})
@@ -96,7 +96,7 @@ class AccountsPool:
         await self.save(account)
         logger.info(f"Account {username} added successfully (active={account.active})")
 
-    async def delete_accounts(self, usernames: str | list[str]):
+    async def delete_accounts(self, usernames: Union[str, List[str]]):
         usernames = usernames if isinstance(usernames, list) else [usernames]
         usernames = list(set(usernames))
         if not usernames:
@@ -157,7 +157,7 @@ class AccountsPool:
             counter["success" if status else "failed"] += 1
         return counter
 
-    async def relogin(self, usernames: str | list[str], email_first=False):
+    async def relogin(self, usernames: Union[str, List[str]], email_first=False):
         usernames = usernames if isinstance(usernames, list) else [usernames]
         usernames = list(set(usernames))
         if not usernames:
@@ -319,7 +319,7 @@ class AccountsPool:
     async def accounts_info(self):
         accounts = await self.get_all()
 
-        items: list[AccountInfo] = []
+        items: List[AccountInfo] = []
         for x in accounts:
             item: AccountInfo = {
                 "username": x.username,

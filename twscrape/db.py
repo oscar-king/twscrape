@@ -1,6 +1,7 @@
 import asyncio
 import sqlite3
 from collections import defaultdict
+from typing import List, Optional
 
 import aiosqlite
 
@@ -95,7 +96,7 @@ async def migrate(db: aiosqlite.Connection):
 
 
 class DB:
-    _init_queries: defaultdict[str, list[str]] = defaultdict(list)
+    _init_queries: defaultdict[str, List[str]] = defaultdict(list)
     _init_once: defaultdict[str, bool] = defaultdict(bool)
 
     def __init__(self, db_path):
@@ -121,13 +122,13 @@ class DB:
 
 
 @lock_retry()
-async def execute(db_path: str, qs: str, params: dict | None = None):
+async def execute(db_path: str, qs: str, params: Optional[dict] = None):
     async with DB(db_path) as db:
         await db.execute(qs, params)
 
 
 @lock_retry()
-async def fetchone(db_path: str, qs: str, params: dict | None = None):
+async def fetchone(db_path: str, qs: str, params: Optional[dict] = None):
     async with DB(db_path) as db:
         async with db.execute(qs, params) as cur:
             row = await cur.fetchone()
@@ -135,7 +136,7 @@ async def fetchone(db_path: str, qs: str, params: dict | None = None):
 
 
 @lock_retry()
-async def fetchall(db_path: str, qs: str, params: dict | None = None):
+async def fetchall(db_path: str, qs: str, params: Optional[dict] = None):
     async with DB(db_path) as db:
         async with db.execute(qs, params) as cur:
             rows = await cur.fetchall()
@@ -143,6 +144,6 @@ async def fetchall(db_path: str, qs: str, params: dict | None = None):
 
 
 @lock_retry()
-async def executemany(db_path: str, qs: str, params: list[dict]):
+async def executemany(db_path: str, qs: str, params: List[dict]):
     async with DB(db_path) as db:
         await db.executemany(qs, params)

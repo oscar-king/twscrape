@@ -2,6 +2,7 @@ import json
 import sqlite3
 from dataclasses import asdict, dataclass, field
 from datetime import datetime
+from typing import Dict, Optional
 
 from httpx import AsyncClient, AsyncHTTPTransport
 
@@ -18,14 +19,14 @@ class Account(JSONTrait):
     email_password: str
     user_agent: str
     active: bool
-    locks: dict[str, datetime] = field(default_factory=dict)  # queue: datetime
-    stats: dict[str, int] = field(default_factory=dict)  # queue: requests
-    headers: dict[str, str] = field(default_factory=dict)
-    cookies: dict[str, str] = field(default_factory=dict)
-    proxy: str | None = None
-    error_msg: str | None = None
-    last_used: datetime | None = None
-    _tx: str | None = None
+    locks: Dict[str, datetime] = field(default_factory=dict)  # queue: datetime
+    stats: Dict[str, int] = field(default_factory=dict)  # queue: requests
+    headers: Dict[str, str] = field(default_factory=dict)
+    cookies: Dict[str, str] = field(default_factory=dict)
+    proxy: Optional[str] = None
+    error_msg: Optional[str] = None
+    last_used: Optional[datetime] = None
+    _tx: Optional[str] = None
 
     @staticmethod
     def from_rs(rs: sqlite3.Row):
